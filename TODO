@@ -1,0 +1,24 @@
+* Add register contents to the sentry event
+  https://docs.sentry.io/server/changelog/ says for version 8.13:
+  "Added registers to stacktrace for cocoa exceptions."
+  See
+      * 181b2213e Merge pull request #4820 from getsentry/feature/add-register-to-stacktrace
+      * https://github.com/getsentry/sentry/pull/4820/files for the changes
+  It looks like it is just a field named 'registers' in the stacktrace interface with a
+  'dict' as value
+* Ensure pretty-printers are enabled for STL types like std::string and std::vector<> and for
+  Qt types such as QList<> and QString
+* Consider dropping thread name - it appears to always be null when debugging a corefile
+* Figure out what happens to stdout and stderr when running as a hook. If it doesn't go to
+  the system log then use syslog instead, when stdout is not attached to a terminal
+* The sentry stackframe attribute 'filename' is specified as being relative and the
+  optional attribute 'abs_path' is supposed to be the absolute path to filename. The example
+  provided in https://docs.sentry.io/clientdev/interfaces/stacktrace/ shows a path in both
+  'filename' and 'abs_path' so I'm not sure exactly how to get the relative path in a
+  general manner. We could do it for EasyViz' own sourcefiles and Qt's using heuristics
+* Add configuration option to provide a regex for pruning paths from
+  filenames in the backtrace. For example
+  /home/jenkins/workspace/easyviz-7.3-packages/arch/rhel6_x86_64_ev6/
+  should be pruned to from the path. Could something like this in
+  /etc/raven-coredump.conf: "source_prefix_regex":
+  ".*/easyviz-[^/]*/arch/[^/]*/"
